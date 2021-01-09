@@ -69,12 +69,12 @@ namespace Napoli.OpenTelemetryExtensions.QuickStart.SimpleTracingSetup
                 this._setupConfig.ComponentsUpdateInterval,
                 this._setupConfig.ComponentsUpdateTimeout,
                 this._setupConfig.TracingComponentsConfigProvider,
-                new List<IConfigUpdatableComponent> {probabilisticSampler, sampler, this._startTraceHandler},
+                new List<IConfigUpdatableComponent> { probabilisticSampler, sampler, this._startTraceHandler },
                 this._setupConfig.Logger, this._setupConfig.MetricsTracker);
 
             this._periodicMetricsReporter = new PeriodicMetricsReporter(
                 this._setupConfig.ComponentsMetricsReportInterval,
-                new List<IMeasurableComponent> {sampler, this._startTraceHandler},
+                new List<IMeasurableComponent> { sampler, this._startTraceHandler },
                 this._setupConfig.Logger,
                 this._setupConfig.MetricsTracker);
         }
