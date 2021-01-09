@@ -1,5 +1,6 @@
 namespace Napoli.OpenTelemetryExtensions.Tracing.Setup
 {
+    using System;
     using System.Collections.Generic;
     using Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation;
     using Napoli.OpenTelemetryExtensions.Tracing.ResourceEnhancers;
@@ -18,35 +19,86 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.Setup
         /**
         * LightStep exporter config
         */
-        public readonly string LightStepIngestEndpoint;
+        public string LightStepIngestEndpoint;
 
-        public readonly string LightStepProjectToken;
+        public string LightStepProjectToken;
 
         /**
          * Http instrumentation config
          */
-        public HttpInstrumentationEnrichWrapper HttpInstrumentationEnrichWrapper { get; private set; }
+        public IHttpEnrichHooks HttpInstrumentationEnrichHooks { get; private set; }
 
         public readonly List<IResourceEnhancer> ResourceEnhancers;
-        public readonly Sampler Sampler;
 
-        public InstrumentationConfig(string serviceName, string serviceVersion, string deploymentEnvironment,
-            string lightStepIngestEndpoint, string lightStepProjectToken, Sampler sampler)
+        public Sampler Sampler;
+
+        public InstrumentationConfig(string serviceName, string serviceVersion, string deploymentEnvironment)
         {
             this.ServiceName = serviceName;
             this.ServiceVersion = serviceVersion;
             this.DeploymentEnvironment = deploymentEnvironment;
-            this.Sampler = sampler;
-            this.LightStepIngestEndpoint = lightStepIngestEndpoint;
-            this.LightStepProjectToken = lightStepProjectToken;
-            this.HttpInstrumentationEnrichWrapper = new HttpInstrumentationEnrichWrapper();
+            this.HttpInstrumentationEnrichHooks = new DefaultHttpEnrichHooks();
             this.ResourceEnhancers = new List<IResourceEnhancer>();
         }
 
-        public InstrumentationConfig SetHttpInstrumentationEnrichWrapper(HttpInstrumentationEnrichWrapper newVal)
+        public InstrumentationConfig WithHttpInstrumentationEnrichHooks(IHttpEnrichHooks newVal)
         {
-            this.HttpInstrumentationEnrichWrapper = newVal;
+            this.HttpInstrumentationEnrichHooks = newVal;
             return this;
+        }
+
+        public InstrumentationConfig WithLightStepConfig(string lightStepIngestEndpoint, string lightStepProjectToken)
+        {
+            this.LightStepIngestEndpoint = lightStepIngestEndpoint;
+            this.LightStepProjectToken = lightStepProjectToken;
+            return this;
+        }
+
+        public InstrumentationConfig WithSampler(Sampler sampler)
+        {
+            this.Sampler = sampler;
+            return this;
+        }
+
+        public InstrumentationConfig AddResourceEnhancers(IEnumerable<IResourceEnhancer> resourceEnhancers)
+        {
+            foreach (var resourceEnhancer in resourceEnhancers)
+            {
+                if (resourceEnhancer != null)
+                {
+                    this.ResourceEnhancers.Add(resourceEnhancer);
+                }
+            }
+
+            return this;
+        }
+
+        public InstrumentationConfig AddResourceEnhancer(IResourceEnhancer resourceEnhancer)
+        {
+            if (resourceEnhancer != null)
+            {
+                this.ResourceEnhancers.Add(resourceEnhancer);
+            }
+
+            return this;
+        }
+
+        public void CheckCompleteness()
+        {
+            if (this.Sampler == null)
+            {
+                throw new ArgumentNullException(nameof(this.Sampler));
+            }
+
+            if (this.LightStepIngestEndpoint == null)
+            {
+                throw new ArgumentNullException(nameof(this.LightStepIngestEndpoint));
+            }
+
+            if (this.LightStepProjectToken == null)
+            {
+                throw new ArgumentNullException(nameof(this.LightStepProjectToken));
+            }
         }
     }
 }

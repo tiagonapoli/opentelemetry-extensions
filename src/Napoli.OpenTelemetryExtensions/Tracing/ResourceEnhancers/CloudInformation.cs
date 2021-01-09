@@ -8,7 +8,6 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.ResourceEnhancers
     public class CloudInformation : IResourceEnhancer
     {
         public string Provider { get; set; }
-        public string AccountId { get; set; }
         public string Region { get; set; }
         public string Zone { get; set; }
 
@@ -19,11 +18,6 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.ResourceEnhancers
             if (this.Provider != null)
             {
                 attributes.Add(OpenTelemetryResourceAttributes.AttributeCloudProvider, this.Provider);
-            }
-
-            if (this.AccountId != null)
-            {
-                attributes.Add(OpenTelemetryResourceAttributes.AttributeCloudAccountId, this.AccountId);
             }
 
             if (this.Region != null)

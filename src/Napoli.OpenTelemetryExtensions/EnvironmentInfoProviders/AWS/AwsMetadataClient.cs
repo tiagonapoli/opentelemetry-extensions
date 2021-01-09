@@ -8,10 +8,12 @@ namespace Napoli.OpenTelemetryExtensions.EnvironmentInfoProviders.AWS
     public class AwsMetadataClient
     {
         private readonly HttpClient _client;
+        private readonly Func<string, AwsInstanceIdentity> _deserializer;
 
-        public AwsMetadataClient(HttpClient client)
+        public AwsMetadataClient(HttpClient client, Func<string, AwsInstanceIdentity> deserializer)
         {
             this._client = client;
+            this._deserializer = deserializer;
         }
 
         public async Task<AwsInstanceIdentity> GetInstanceIdentityAsync(CancellationToken cancellationToken)
@@ -22,9 +24,7 @@ namespace Napoli.OpenTelemetryExtensions.EnvironmentInfoProviders.AWS
             var content = await res.Content.ReadAsStringAsync().ConfigureAwait(false);
             if (res.IsSuccessStatusCode)
             {
-                return content == null
-                    ? null
-                    : System.Text.Json.JsonSerializer.Deserialize<AwsInstanceIdentity>(content);
+                return content == null ? null : this._deserializer(content);
             }
 
             res.Content?.Dispose();

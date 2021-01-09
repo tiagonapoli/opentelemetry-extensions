@@ -11,7 +11,6 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.Conventions
         public const string AttributeHostId = "host.id";
         public const string AttributeHostType = "host.type";
         public const string AttributeHostImageName = "host.image.name";
-        public const string AttributeHostImageVersion = "host.image.version";
 
         public const string AttributeCloudProvider = "cloud.provider";
         public const string AttributeCloudAccountId = "cloud.account.id";

@@ -1,30 +1,35 @@
 namespace Napoli.OpenTelemetryExtensions.EnvironmentInfoProviders.AWS
 {
+    using System;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
     using Napoli.OpenTelemetryExtensions.Tracing.ResourceEnhancers;
 
-    public class AwsInstanceIdentityProvider
+    public static class AwsInstanceIdentityProvider
     {
         public static AwsInstanceIdentity InstanceIdentity;
 
-        public static async Task<AwsInstanceIdentity> InitInstanceIdentity(int timeout,
-            CancellationToken cancellationToken)
+        public static async Task InitInstanceIdentity(int timeoutMs, Func<string, AwsInstanceIdentity> deserializer,
+            CancellationToken cancellationToken, Action<Exception> onInitError = null)
         {
             if (InstanceIdentity != null)
             {
-                return InstanceIdentity;
+                return;
             }
 
-            using var cancellationTokenSource = new CancellationTokenSource(timeout);
-            using var linkedCancellationTokenSource =
-                CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cancellationTokenSource.Token);
-            using var httpClient = new HttpClient();
-            var client = new AwsMetadataClient(httpClient);
-            InstanceIdentity = await client.GetInstanceIdentityAsync(linkedCancellationTokenSource.Token);
-
-            return InstanceIdentity;
+            using var cancellationTokenSource = new CancellationTokenSource(timeoutMs);
+            using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cancellationTokenSource.Token);
+            try
+            {
+                using var httpClient = new HttpClient();
+                var client = new AwsMetadataClient(httpClient, deserializer);
+                InstanceIdentity = await client.GetInstanceIdentityAsync(linkedCancellationTokenSource.Token);
+            }
+            catch (Exception ex)
+            {
+                onInitError?.Invoke(ex);
+            }
         }
 
         public static IResourceEnhancer GetHostResourceEnhancer()
@@ -52,7 +57,6 @@ namespace Napoli.OpenTelemetryExtensions.EnvironmentInfoProviders.AWS
             return new CloudInformation
             {
                 Provider = "aws",
-                AccountId = InstanceIdentity.AccountId,
                 Region = InstanceIdentity.Region,
                 Zone = InstanceIdentity.AvailabilityZone
             };

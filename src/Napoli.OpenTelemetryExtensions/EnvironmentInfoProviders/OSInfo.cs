@@ -4,7 +4,7 @@ namespace Napoli.OpenTelemetryExtensions.EnvironmentInfoProviders
     using System.Runtime.InteropServices;
     using Napoli.OpenTelemetryExtensions.Tracing.ResourceEnhancers;
 
-    public class OSInfo
+    public class OsInfo
     {
         public static string GetOsName()
         {

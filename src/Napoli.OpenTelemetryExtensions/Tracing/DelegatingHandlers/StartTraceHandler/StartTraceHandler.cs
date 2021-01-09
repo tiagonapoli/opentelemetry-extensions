@@ -10,11 +10,12 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
     using System.Threading.Tasks;
     using Napoli.OpenTelemetryExtensions.Interfaces;
     using Napoli.OpenTelemetryExtensions.Tracing.Conventions;
+    using Napoli.OpenTelemetryExtensions.Tracing.Samplers.ProbabilisticOrDebugModeSampler;
     using OpenTelemetry;
     using OpenTelemetry.Context.Propagation;
     using OpenTelemetry.Trace;
 
-    public class StartTraceHandler : DelegatingHandler, IConfigUpdatableComponent
+    public class StartTraceHandler : DelegatingHandler, IConfigUpdatableComponent, IMeasurableComponent
     {
         private static readonly Func<HttpRequestMessage, string, IEnumerable<string>> HttpRequestHeaderValuesGetter =
             (request, name) => request.Headers.TryGetValues(name, out var ret) ? ret : null;
@@ -25,6 +26,11 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
         private readonly DebugModeConfig _debugModeConfig;
         private readonly IRouteTemplateProvider _routeTemplateProvider;
         private readonly ActivitySource _tracer;
+
+        private int _debugModeTracedRequests;
+        private int _probabilisticTracedRequests;
+        private int _incomingTracedRequests;
+        private int _tracedRequests;
 
         public StartTraceHandler(ActivitySource activitySource, Action onTraceEnd, IRouteTemplateProvider routeTemplateProvider,
             DebugModeConfig debugModeConfig, IConfigurationProvider configurationProvider)
@@ -49,6 +55,19 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
             this._conf = Configuration.GetDefault();
         }
 
+        /// <inheritdoc/>
+        public void ReportMetrics(IMetricsTracker metricsTracker)
+        {
+            metricsTracker.Register("TotalTracedRequests", this._tracedRequests);
+            metricsTracker.Register("IncomingTracedRequests", this._incomingTracedRequests);
+            metricsTracker.Register("DebugModeTracedRequests", this._debugModeTracedRequests);
+            metricsTracker.Register("ProbabilisticTracedRequests", this._probabilisticTracedRequests);
+            this._tracedRequests = 0;
+            this._incomingTracedRequests = 0;
+            this._debugModeTracedRequests = 0;
+            this._probabilisticTracedRequests = 0;
+        }
+
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
@@ -60,6 +79,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
 
             var headers = request.Headers.ToDictionary(item => item.Key.ToLower(), item => item.Value.First());
             ActivityTagsCollection activityTags = null;
+
             if (this._conf.EnableDebugMode &&
                 headers.TryGetValue(this._debugModeConfig.DebugModeHeader, out var debugModeString))
             {
@@ -72,7 +92,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
 
             using var activity =
                 this._tracer.StartActivity(
-                    string.IsNullOrWhiteSpace(routeTemplate) ? "unknown" : $"{request.Method} {routeTemplate}",
+                    string.IsNullOrWhiteSpace(routeTemplate) ? $"{request.Method} unknown" : $"{request.Method} {routeTemplate}",
                     ActivityKind.Server, ctx.ActivityContext, activityTags) ?? CreateDummyUnrecordedActivity(ctx);
 
             if (Baggage.Current != default)
@@ -81,6 +101,28 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
             }
 
             var isTraced = activity.IsAllDataRequested;
+            if (isTraced)
+            {
+                Interlocked.Increment(ref this._tracedRequests);
+                if ((ctx.ActivityContext.TraceFlags & ActivityTraceFlags.Recorded) != 0)
+                {
+                    Interlocked.Increment(ref this._incomingTracedRequests);
+                }
+                else
+                {
+                    var samplerType = activity.Tags.FirstOrDefault(tag => tag.Key == OpenTelemetryAttributes.AttributeSamplerType);
+                    switch (samplerType.Value)
+                    {
+                        case ProbabilisticOrDebugModeSampler.ProbabilisticSamplerType:
+                            Interlocked.Increment(ref this._probabilisticTracedRequests);
+                            break;
+                        case ProbabilisticOrDebugModeSampler.DebugModeSamplerType:
+                            Interlocked.Increment(ref this._debugModeTracedRequests);
+                            break;
+                    }
+                }
+            }
+
             HttpResponseMessage response = null;
 
             try
@@ -100,7 +142,11 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
             }
             finally
             {
-                if (isTraced) this._onTraceEnd();
+                if (isTraced)
+                {
+                    this._onTraceEnd();
+                }
+
                 if (activity.IsAllDataRequested)
                 {
                     EnrichActivity(request, response, activity);

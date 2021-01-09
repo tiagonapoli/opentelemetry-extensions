@@ -1,22 +1,16 @@
 namespace Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation
 {
-    using System;
     using System.Diagnostics;
     using System.Net;
     using Napoli.OpenTelemetryExtensions.Tracing.Conventions;
 
     public class HttpInstrumentationEnrichWrapper
     {
-        private readonly Action<Activity, HttpWebRequest> _onStart;
-        private readonly Action<Activity, HttpWebResponse> _onSuccessEnd;
-        private readonly Action<Activity, WebException> _onError;
+        private readonly IHttpEnrichHooks _enrichHooks;
 
-        public HttpInstrumentationEnrichWrapper(Action<Activity, HttpWebRequest> onStart = null,
-            Action<Activity, HttpWebResponse> onSuccessEnd = null, Action<Activity, WebException> onError = null)
+        public HttpInstrumentationEnrichWrapper(IHttpEnrichHooks enrichHooks = null)
         {
-            this._onStart = onStart;
-            this._onSuccessEnd = onSuccessEnd;
-            this._onError = onError;
+            this._enrichHooks = enrichHooks ?? new DefaultHttpEnrichHooks();
         }
 
         public void Enrich(Activity activity, string eventName, object rawObject)
@@ -34,7 +28,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation
                         request.ContentLength);
                 }
 
-                this._onStart?.Invoke(activity, request);
+                this._enrichHooks.OnStart(activity, request);
             }
             else if (eventName.Equals("OnStopActivity"))
             {
@@ -49,7 +43,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation
                         response.ContentLength);
                 }
 
-                this._onSuccessEnd?.Invoke(activity, response);
+                this._enrichHooks.OnSuccessEnd(activity, response);
             }
             else if (eventName.Equals("OnException"))
             {
@@ -64,7 +58,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation
                     activity.SetTag(OpenTelemetryAttributes.AttributeHttpStatusCode, "-");
                 }
 
-                this._onError?.Invoke(activity, ex);
+                this._enrichHooks.OnError(activity, ex);
             }
         }
     }

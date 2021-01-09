@@ -2,6 +2,10 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.Conventions
 {
     public static class OpenTelemetryAttributes
     {
+        // Extended attributes
+        public const string AttributeSamplerType = "sampler.type";
+
+
         // The set of constants matches the specification.
         // https://github.com/open-telemetry/opentelemetry-specification/tree/master/specification/trace/semantic_conventions
         // https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/trace/semantic_conventions/exceptions.md

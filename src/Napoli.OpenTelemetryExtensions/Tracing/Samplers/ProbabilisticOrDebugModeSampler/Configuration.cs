@@ -19,11 +19,16 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.Samplers.ProbabilisticOrDebugMo
             this._defaultIdUpperBound = new KeyValuePair<double, long>(defaultProbability, CalculateIdUpperBound(defaultProbability));
 
             this._perOperationIdUpperBound = new Dictionary<string, KeyValuePair<double, long>>();
+
+            if (perOperationProbability == null)
+            {
+                return;
+            }
+
             foreach (var item in perOperationProbability)
             {
                 this._perOperationIdUpperBound[item.Key] = new KeyValuePair<double, long>(item.Value, CalculateIdUpperBound(item.Value));
             }
-
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

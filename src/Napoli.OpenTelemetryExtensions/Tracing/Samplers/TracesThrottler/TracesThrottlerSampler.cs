@@ -8,11 +8,9 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.Samplers.TracesThrottler
     {
         private readonly Sampler _rootSampler;
         private readonly object _lockObj = new object();
+        private int _throttledTraces;
         private int _ongoingTraces;
         private int _maxOngoingTraces;
-
-        private int _tracedRequests;
-        private int _throttledTraces;
         private readonly IConfigurationProvider _configProvider;
 
         public TracesThrottlerSampler(Sampler rootSampler, IConfigurationProvider configProvider)
@@ -25,10 +23,8 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.Samplers.TracesThrottler
         /// <inheritdoc/>
         public void ReportMetrics(IMetricsTracker metricsTracker)
         {
-            metricsTracker.Register("TracedRequests", this._tracedRequests);
             metricsTracker.Register("OngoingTraces", this._ongoingTraces);
             metricsTracker.Register("ThrottledTraces", this._throttledTraces);
-            this._tracedRequests = 0;
             this._throttledTraces = 0;
         }
 
@@ -57,7 +53,6 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.Samplers.TracesThrottler
                     return new SamplingResult(false);
                 }
 
-                this._tracedRequests++;
                 this._ongoingTraces++;
             }
 

@@ -7,26 +7,26 @@ namespace Napoli.OpenTelemetryExtensions.Tracing
     using Napoli.OpenTelemetryExtensions.Tracing.Conventions;
     using OpenTelemetry.Trace;
 
-    public class Tracer
+    public class ActivityTracer
     {
-        public static Tracer Singleton;
+        public static ActivityTracer Singleton;
 
         public static void InitSingleton(ActivitySource activitySource)
         {
-            Singleton = new Tracer(activitySource);
+            Singleton = new ActivityTracer(activitySource);
         }
 
-        public readonly ActivitySource Instance;
+        public readonly ActivitySource ActivitySource;
 
-        private Tracer(ActivitySource activitySource)
+        private ActivityTracer(ActivitySource activitySource)
         {
-            this.Instance = activitySource;
+            this.ActivitySource = activitySource;
         }
 
         public async Task<T> RunAndTraceAsync<T>(string activityName, Func<Task<T>> fn)
         {
             if (!TracingUtils.IsTraceRecorded(Activity.Current)) return await fn();
-            using var activity = this.Instance.StartActivity(activityName);
+            using var activity = this.ActivitySource.StartActivity(activityName);
 
             try
             {
@@ -49,7 +49,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing
                 return;
             }
 
-            using var activity = this.Instance.StartActivity(activityName);
+            using var activity = this.ActivitySource.StartActivity(activityName);
 
             try
             {
