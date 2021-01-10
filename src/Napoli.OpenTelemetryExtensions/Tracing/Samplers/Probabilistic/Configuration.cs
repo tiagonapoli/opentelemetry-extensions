@@ -1,4 +1,4 @@
-namespace Napoli.OpenTelemetryExtensions.Tracing.Samplers.ProbabilisticOrDebugModeSampler
+namespace Napoli.OpenTelemetryExtensions.Tracing.Samplers.Probabilistic
 {
     using System.Collections.Generic;
     using System.Runtime.CompilerServices;

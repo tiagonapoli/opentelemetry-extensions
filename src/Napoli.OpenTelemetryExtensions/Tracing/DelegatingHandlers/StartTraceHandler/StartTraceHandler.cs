@@ -10,7 +10,6 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
     using System.Threading.Tasks;
     using Napoli.OpenTelemetryExtensions.Interfaces;
     using Napoli.OpenTelemetryExtensions.Tracing.Conventions;
-    using Napoli.OpenTelemetryExtensions.Tracing.Samplers.ProbabilisticOrDebugModeSampler;
     using OpenTelemetry;
     using OpenTelemetry.Context.Propagation;
     using OpenTelemetry.Trace;
@@ -107,19 +106,6 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
                 if ((ctx.ActivityContext.TraceFlags & ActivityTraceFlags.Recorded) != 0)
                 {
                     Interlocked.Increment(ref this._incomingTracedRequests);
-                }
-                else
-                {
-                    var samplerType = activity.Tags.FirstOrDefault(tag => tag.Key == OpenTelemetryAttributes.AttributeSamplerType);
-                    switch (samplerType.Value)
-                    {
-                        case ProbabilisticOrDebugModeSampler.ProbabilisticSamplerType:
-                            Interlocked.Increment(ref this._probabilisticTracedRequests);
-                            break;
-                        case ProbabilisticOrDebugModeSampler.DebugModeSamplerType:
-                            Interlocked.Increment(ref this._debugModeTracedRequests);
-                            break;
-                    }
                 }
             }
 
