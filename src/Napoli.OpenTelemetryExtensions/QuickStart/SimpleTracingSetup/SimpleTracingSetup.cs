@@ -11,7 +11,8 @@ namespace Napoli.OpenTelemetryExtensions.QuickStart.SimpleTracingSetup
     using Napoli.OpenTelemetryExtensions.Tracing;
     using Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHandler;
     using Napoli.OpenTelemetryExtensions.Tracing.ResourceEnhancers;
-    using Napoli.OpenTelemetryExtensions.Tracing.Samplers.ProbabilisticOrDebugModeSampler;
+    using Napoli.OpenTelemetryExtensions.Tracing.Samplers.DebugMode;
+    using Napoli.OpenTelemetryExtensions.Tracing.Samplers.Probabilistic;
     using Napoli.OpenTelemetryExtensions.Tracing.Samplers.TracesThrottler;
     using Napoli.OpenTelemetryExtensions.Tracing.Setup;
     using OpenTelemetry.Trace;
@@ -46,12 +47,10 @@ namespace Napoli.OpenTelemetryExtensions.QuickStart.SimpleTracingSetup
             setupConfig.CheckValidity();
             this._setupConfig = setupConfig;
 
-            var probabilisticSampler = new ProbabilisticOrDebugModeSampler(
-                this._setupConfig.DebugModeConfig,
-                this._setupConfig.TracingComponentsConfigProvider);
-
+            var probabilisticSampler = new ProbabilisticSampler(this._setupConfig.TracingComponentsConfigProvider);
+            var debugModeSampler = new DebugModeSampler(probabilisticSampler, this._setupConfig.DebugModeConfig);
             var sampler = new TracesThrottlerSampler(
-                new ParentBasedSampler(probabilisticSampler),
+                new ParentBasedSampler(debugModeSampler),
                 this._setupConfig.TracingComponentsConfigProvider);
 
             this._setupConfig.InstrumentationConfig.WithSampler(sampler);
@@ -59,7 +58,7 @@ namespace Napoli.OpenTelemetryExtensions.QuickStart.SimpleTracingSetup
             TracingSetup.PreConfigure(this._setupConfig.InstrumentationConfig);
 
             this._startTraceHandler = new StartTraceHandler(
-                ActivityTracer.Singleton.ActivitySource,
+                ActivityTracer.Singleton,
                 () => sampler.DecrementOngoingTraces(),
                 this._setupConfig.RouteTemplateProvider, this._setupConfig.DebugModeConfig,
                 this._setupConfig.TracingComponentsConfigProvider

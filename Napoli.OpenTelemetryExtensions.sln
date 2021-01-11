@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Napoli.OpenTelemetryExtensions", "Napoli.OpenTelemetryExtensions\Napoli.OpenTelemetryExtensions.csproj", "{B19DF613-0EE3-4540-8E2F-F129EB3D9C70}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Napoli.OpenTelemetryExtensions", "src\Napoli.OpenTelemetryExtensions\Napoli.OpenTelemetryExtensions.csproj", "{B19DF613-0EE3-4540-8E2F-F129EB3D9C70}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Napoli.OpenTelemetryExtensions.Tests", "tests\Napoli.OpenTelemetryExtensions.Tests\Napoli.OpenTelemetryExtensions.Tests.csproj", "{6567A4F7-5D1D-4525-B536-FE627FDF056C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -16,5 +18,9 @@ Global
 		{F840E2A6-1EA6-42F7-B1D1-7B4F718E2F08}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F840E2A6-1EA6-42F7-B1D1-7B4F718E2F08}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F840E2A6-1EA6-42F7-B1D1-7B4F718E2F08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6567A4F7-5D1D-4525-B536-FE627FDF056C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6567A4F7-5D1D-4525-B536-FE627FDF056C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6567A4F7-5D1D-4525-B536-FE627FDF056C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6567A4F7-5D1D-4525-B536-FE627FDF056C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,10 +1,12 @@
 namespace Napoli.OpenTelemetryExtensions.Tracing
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using Napoli.OpenTelemetryExtensions.Tracing.Conventions;
+    using OpenTelemetry.Context.Propagation;
     using OpenTelemetry.Trace;
 
     public class ActivityTracer
@@ -61,6 +63,23 @@ namespace Napoli.OpenTelemetryExtensions.Tracing
                 RunAndTraceOnError(activity, ex);
                 throw;
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Activity StartEntrypointActivity(string name, ActivityKind kind, PropagationContext parentContext, IEnumerable<KeyValuePair<string, object>> tags = null, IEnumerable<ActivityLink> links = null, DateTimeOffset startTime = default)
+        {
+            return this.ActivitySource.StartActivity(name, kind, parentContext.ActivityContext, tags, links, startTime) ?? CreateDummyUnrecordedActivity(parentContext);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Activity CreateDummyUnrecordedActivity(PropagationContext ctx)
+        {
+            var activity = new Activity("unrecorded-activity");
+            activity.SetParentId(ctx.ActivityContext.TraceId, ctx.ActivityContext.SpanId, ctx.ActivityContext.TraceFlags);
+            activity.TraceStateString = ctx.ActivityContext.TraceState;
+            activity.Start();
+            activity.IsAllDataRequested = false;
+            return activity;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
