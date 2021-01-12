@@ -73,7 +73,7 @@ namespace Napoli.OpenTelemetryExtensions.QuickStart.SimpleTracingSetup
 
             this._periodicMetricsReporter = new PeriodicMetricsReporter(
                 this._setupConfig.ComponentsMetricsReportInterval,
-                new List<IMeasurableComponent> { sampler, this._startTraceHandler },
+                new List<IMeasurableComponent> { probabilisticSampler, debugModeSampler, sampler, this._startTraceHandler },
                 this._setupConfig.Logger,
                 this._setupConfig.MetricsTracker);
         }
