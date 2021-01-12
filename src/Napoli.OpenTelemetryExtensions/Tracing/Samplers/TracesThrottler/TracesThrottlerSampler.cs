@@ -1,5 +1,6 @@
 namespace Napoli.OpenTelemetryExtensions.Tracing.Samplers.TracesThrottler
 {
+    using System;
     using System.Diagnostics;
     using Napoli.OpenTelemetryExtensions.Interfaces;
     using OpenTelemetry.Trace;
@@ -11,6 +12,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.Samplers.TracesThrottler
         private int _throttledTraces;
         private int _ongoingTraces;
         private int _maxOngoingTraces;
+        private int _peakOngoingTraces;
         private readonly IConfigurationProvider _configProvider;
 
         public TracesThrottlerSampler(Sampler rootSampler, IConfigurationProvider configProvider)
@@ -24,8 +26,10 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.Samplers.TracesThrottler
         public void ReportMetrics(IMetricsTracker metricsTracker)
         {
             metricsTracker.Register("OngoingTraces", this._ongoingTraces);
+            metricsTracker.Register("PeakOngoingTraces", this._ongoingTraces);
             metricsTracker.Register("ThrottledTraces", this._throttledTraces);
             this._throttledTraces = 0;
+            this._peakOngoingTraces = 0;
         }
 
         /// <inheritdoc/>
@@ -54,6 +58,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.Samplers.TracesThrottler
                 }
 
                 this._ongoingTraces++;
+                this._peakOngoingTraces = Math.Max(this._ongoingTraces, this._peakOngoingTraces);
             }
 
             return samplingDecision;
