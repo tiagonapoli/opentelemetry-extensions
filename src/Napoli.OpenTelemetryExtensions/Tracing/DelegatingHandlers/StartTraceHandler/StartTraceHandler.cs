@@ -27,6 +27,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
         private readonly ActivityTracer _activityTracer;
 
         private int _incomingTracedRequests;
+        private int _incomingNotTracedRequests;
         private int _tracedRequests;
 
         public StartTraceHandler(ActivityTracer activityTracer, Action onTraceEnd, IRouteTemplateProvider routeTemplateProvider,
@@ -57,8 +58,10 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
         {
             metricsTracker.Register("TotalTracedRequests", this._tracedRequests);
             metricsTracker.Register("IncomingTracedRequests", this._incomingTracedRequests);
+            metricsTracker.Register("IncomingNotTracedRequests", this._incomingNotTracedRequests);
             this._tracedRequests = 0;
             this._incomingTracedRequests = 0;
+            this._incomingNotTracedRequests = 0;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
@@ -83,6 +86,14 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
             var textMapPropagator = Propagators.DefaultTextMapPropagator;
             var ctx = textMapPropagator.Extract(default, request, HttpRequestHeaderValuesGetter);
 
+            if ((ctx.ActivityContext.TraceFlags & ActivityTraceFlags.Recorded) != 0)
+            {
+                Interlocked.Increment(ref this._incomingTracedRequests);
+            } else if (ctx.ActivityContext.TraceId != default)
+            {
+                Interlocked.Increment(ref this._incomingNotTracedRequests);
+            }
+
             using var activity = this._activityTracer.StartEntrypointActivity(
                 string.IsNullOrWhiteSpace(routeTemplate) ? $"{request.Method} unknown" : $"{request.Method} {routeTemplate}",
                 ActivityKind.Server, ctx, activityTags);
@@ -96,10 +107,6 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
             if (isTraced)
             {
                 Interlocked.Increment(ref this._tracedRequests);
-                if ((ctx.ActivityContext.TraceFlags & ActivityTraceFlags.Recorded) != 0)
-                {
-                    Interlocked.Increment(ref this._incomingTracedRequests);
-                }
             }
 
             HttpResponseMessage response = null;
