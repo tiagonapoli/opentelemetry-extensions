@@ -26,7 +26,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.Samplers.TracesThrottler
         public void ReportMetrics(IMetricsTracker metricsTracker)
         {
             metricsTracker.Register("OngoingTraces", this._ongoingTraces);
-            metricsTracker.Register("PeakOngoingTraces", this._ongoingTraces);
+            metricsTracker.Register("PeakOngoingTraces", this._peakOngoingTraces);
             metricsTracker.Register("ThrottledTraces", this._throttledTraces);
             this._throttledTraces = 0;
             this._peakOngoingTraces = 0;
