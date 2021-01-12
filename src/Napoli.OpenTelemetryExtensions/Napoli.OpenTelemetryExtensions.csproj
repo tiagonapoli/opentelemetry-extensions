@@ -4,7 +4,7 @@
         <TargetFrameworks>net48;netstandard2.0</TargetFrameworks>
         <LangVersion>8.0</LangVersion>
         <PackageId>Napoli.OpenTelemetryExtensions</PackageId>
-        <Version>0.0.7-beta.1</Version>
+        <Version>0.0.7-beta.2</Version>
         <Description>Extensions to OpenTelemetry</Description>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryType>git</RepositoryType>
