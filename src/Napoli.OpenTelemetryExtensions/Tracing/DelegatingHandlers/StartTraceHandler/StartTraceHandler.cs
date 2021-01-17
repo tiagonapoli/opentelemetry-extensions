@@ -3,13 +3,13 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Linq;
     using System.Net.Http;
     using System.Runtime.CompilerServices;
     using System.Threading;
     using System.Threading.Tasks;
     using Napoli.OpenTelemetryExtensions.Interfaces;
     using Napoli.OpenTelemetryExtensions.Tracing.Conventions;
+    using Napoli.OpenTelemetryExtensions.Utils;
     using OpenTelemetry;
     using OpenTelemetry.Context.Propagation;
     using OpenTelemetry.Trace;
@@ -25,9 +25,11 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
         private readonly DebugModeConfig _debugModeConfig;
         private readonly IRouteTemplateProvider _routeTemplateProvider;
         private readonly ActivityTracer _activityTracer;
+        private readonly ServerHeadersTracker _serverHeadersTracker;
 
         private int _incomingTracedRequests;
         private int _incomingNotTracedRequests;
+        private int _incomingUndecidedRequests;
         private int _tracedRequests;
 
         public StartTraceHandler(ActivityTracer activityTracer, Action onTraceEnd, IRouteTemplateProvider routeTemplateProvider,
@@ -38,6 +40,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
             this._routeTemplateProvider = routeTemplateProvider;
             this._debugModeConfig = debugModeConfig;
             this._configurationProvider = configurationProvider;
+            this._serverHeadersTracker = new ServerHeadersTracker();
             this.ResetConfiguration();
         }
 
@@ -45,12 +48,14 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
         public void UpdateConfiguration()
         {
             this._conf = this._configurationProvider.GetStartTraceHandlerConfig();
+            this._serverHeadersTracker.UpdateConfiguration(this._conf.TrackedHeaders);
         }
 
         /// <inheritdoc/>
         public void ResetConfiguration()
         {
             this._conf = Configuration.GetDefault();
+            this._serverHeadersTracker.UpdateConfiguration(this._conf.TrackedHeaders);
         }
 
         /// <inheritdoc/>
@@ -59,9 +64,11 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
             metricsTracker.Register("TotalTracedRequests", this._tracedRequests);
             metricsTracker.Register("IncomingTracedRequests", this._incomingTracedRequests);
             metricsTracker.Register("IncomingNotTracedRequests", this._incomingNotTracedRequests);
+            metricsTracker.Register("IncomingUndecidedRequests", this._incomingUndecidedRequests);
             this._tracedRequests = 0;
             this._incomingTracedRequests = 0;
             this._incomingNotTracedRequests = 0;
+            this._incomingUndecidedRequests = 0;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
@@ -73,11 +80,8 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
                 return await base.SendAsync(request, cancellationToken);
             }
 
-            var headers = request.Headers.ToDictionary(item => item.Key.ToLower(), item => item.Value.First());
             ActivityTagsCollection activityTags = null;
-
-            if (this._conf.EnableDebugMode &&
-                headers.TryGetValue(this._debugModeConfig.DebugModeHeader, out var debugModeString))
+            if (this._conf.EnableDebugMode && request.Headers.TryGetHeaderAsString(this._debugModeConfig.DebugModeHeader, out var debugModeString))
             {
                 activityTags = new ActivityTagsCollection { { this._debugModeConfig.DebugModeAttribute, debugModeString } };
             }
@@ -89,9 +93,14 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
             if ((ctx.ActivityContext.TraceFlags & ActivityTraceFlags.Recorded) != 0)
             {
                 Interlocked.Increment(ref this._incomingTracedRequests);
-            } else if (ctx.ActivityContext.TraceId != default)
+            }
+            else if (ctx.ActivityContext.TraceId != default)
             {
                 Interlocked.Increment(ref this._incomingNotTracedRequests);
+            }
+            else
+            {
+                Interlocked.Increment(ref this._incomingUndecidedRequests);
             }
 
             using var activity = this._activityTracer.StartEntrypointActivity(
@@ -135,13 +144,13 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
 
                 if (activity.IsAllDataRequested)
                 {
-                    EnrichActivity(request, response, activity);
+                    this.EnrichActivity(activity, request, response);
                 }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void EnrichActivity(HttpRequestMessage request, HttpResponseMessage response, Activity activity)
+        private void EnrichActivity(Activity activity, HttpRequestMessage request, HttpResponseMessage response)
         {
             if (request.RequestUri.Port == 80 || request.RequestUri.Port == 443)
             {
@@ -157,11 +166,18 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
             activity.SetTag(OpenTelemetryAttributes.AttributeHttpUserAgent, request.Headers.UserAgent);
             activity.SetTag(OpenTelemetryAttributes.AttributeHttpUrl, request.RequestUri.ToString());
 
-            if (response == null) return;
-            activity.SetTag(OpenTelemetryAttributes.AttributeHttpStatusCode, (int)response.StatusCode);
+            this._serverHeadersTracker.EnrichWithRequest(activity, request.Headers);
+            var statusCode = 500;
+            if (response != null)
+            {
+                statusCode = (int)response.StatusCode;
+                this._serverHeadersTracker.EnrichWithResponse(activity, response.Headers);
+            }
+
+            activity.SetTag(OpenTelemetryAttributes.AttributeHttpStatusCode, statusCode);
             if (activity.GetStatus().StatusCode == StatusCode.Unset)
             {
-                activity.SetStatus(TracingUtils.ResolveSpanStatusForHttpStatusCode((int)response.StatusCode));
+                activity.SetStatus(TracingUtils.ResolveSpanStatusForHttpStatusCode(statusCode));
             }
         }
     }

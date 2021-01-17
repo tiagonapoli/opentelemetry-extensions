@@ -10,6 +10,7 @@ namespace Napoli.OpenTelemetryExtensions.QuickStart.SimpleTracingSetup
     using Napoli.OpenTelemetryExtensions.QuickStart.PeriodicTasks;
     using Napoli.OpenTelemetryExtensions.Tracing;
     using Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHandler;
+    using Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation.HeadersTracker.ClientHeadersTracker;
     using Napoli.OpenTelemetryExtensions.Tracing.ResourceEnhancers;
     using Napoli.OpenTelemetryExtensions.Tracing.Samplers.DebugMode;
     using Napoli.OpenTelemetryExtensions.Tracing.Samplers.Probabilistic;
@@ -55,6 +56,8 @@ namespace Napoli.OpenTelemetryExtensions.QuickStart.SimpleTracingSetup
 
             this._setupConfig.InstrumentationConfig.WithSampler(sampler);
 
+            var httpClientHeadersTracker = new ClientHeadersTracker(this._setupConfig.TracingComponentsConfigProvider);
+            this._setupConfig.InstrumentationConfig.HttpInstrumentationEnrichHooks.Add(httpClientHeadersTracker);
             TracingSetup.PreConfigure(this._setupConfig.InstrumentationConfig);
 
             this._startTraceHandler = new StartTraceHandler(
@@ -68,7 +71,7 @@ namespace Napoli.OpenTelemetryExtensions.QuickStart.SimpleTracingSetup
                 this._setupConfig.ComponentsUpdateInterval,
                 this._setupConfig.ComponentsUpdateTimeout,
                 this._setupConfig.TracingComponentsConfigProvider,
-                new List<IConfigUpdatableComponent> { probabilisticSampler, sampler, this._startTraceHandler },
+                new List<IConfigUpdatableComponent> { probabilisticSampler, sampler, httpClientHeadersTracker, this._startTraceHandler },
                 this._setupConfig.Logger, this._setupConfig.MetricsTracker);
 
             this._periodicMetricsReporter = new PeriodicMetricsReporter(

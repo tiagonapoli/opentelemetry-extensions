@@ -22,8 +22,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.Setup
         {
             ActivityTracer.InitSingleton(new ActivitySource(conf.ServiceName));
             _tracerProviderBuilder = Sdk.CreateTracerProviderBuilder();
-            TracerProviderBuilderHttpConfigExtension
-                .AddAndConfigureHttpClientInstrumentation(_tracerProviderBuilder, new HttpInstrumentationEnrichWrapper(conf.HttpInstrumentationEnrichHooks));
+            TracerProviderBuilderHttpConfigExtension.AddAndConfigureHttpClientInstrumentation(_tracerProviderBuilder, new HttpInstrumentationEnrichWrapper(conf.HttpInstrumentationEnrichHooks.ToArray()));
         }
 
         public static TracerProvider Configure(InstrumentationConfig conf)

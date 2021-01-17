@@ -26,7 +26,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.Setup
         /**
          * Http instrumentation config
          */
-        public IHttpEnrichHooks HttpInstrumentationEnrichHooks { get; private set; }
+        public readonly List<IHttpEnrichHooks> HttpInstrumentationEnrichHooks;
 
         public readonly List<IResourceEnhancer> ResourceEnhancers;
 
@@ -37,13 +37,13 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.Setup
             this.ServiceName = serviceName;
             this.ServiceVersion = serviceVersion;
             this.DeploymentEnvironment = deploymentEnvironment;
-            this.HttpInstrumentationEnrichHooks = new DefaultHttpEnrichHooks();
+            this.HttpInstrumentationEnrichHooks = new List<IHttpEnrichHooks>();
             this.ResourceEnhancers = new List<IResourceEnhancer>();
         }
 
-        public InstrumentationConfig WithHttpInstrumentationEnrichHooks(IHttpEnrichHooks newVal)
+        public InstrumentationConfig AddHttpInstrumentationEnrichHooks(IHttpEnrichHooks enrichHooks)
         {
-            this.HttpInstrumentationEnrichHooks = newVal;
+            this.HttpInstrumentationEnrichHooks.Add(enrichHooks);
             return this;
         }
 

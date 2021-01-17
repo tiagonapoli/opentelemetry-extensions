@@ -6,11 +6,11 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation
 
     public class HttpInstrumentationEnrichWrapper
     {
-        private readonly IHttpEnrichHooks _enrichHooks;
+        private readonly IHttpEnrichHooks[] _enrichHooks;
 
-        public HttpInstrumentationEnrichWrapper(IHttpEnrichHooks enrichHooks = null)
+        public HttpInstrumentationEnrichWrapper(IHttpEnrichHooks[] enrichHooks)
         {
-            this._enrichHooks = enrichHooks ?? new DefaultHttpEnrichHooks();
+            this._enrichHooks = enrichHooks ?? new IHttpEnrichHooks[0];
         }
 
         public void Enrich(Activity activity, string eventName, object rawObject)
@@ -28,7 +28,10 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation
                         request.ContentLength);
                 }
 
-                this._enrichHooks.OnStart(activity, request);
+                foreach (var enrichHook in this._enrichHooks)
+                {
+                    enrichHook.OnStart(activity, request);
+                }
             }
             else if (eventName.Equals("OnStopActivity"))
             {
@@ -43,7 +46,10 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation
                         response.ContentLength);
                 }
 
-                this._enrichHooks.OnSuccessEnd(activity, response);
+                foreach (var enrichHook in this._enrichHooks)
+                {
+                    enrichHook.OnSuccessEnd(activity, response);
+                }
             }
             else if (eventName.Equals("OnException"))
             {
@@ -56,9 +62,13 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation
                 if (statusCode == null)
                 {
                     activity.SetTag(OpenTelemetryAttributes.AttributeHttpStatusCode, "-");
+                    activity.SetTag(OpenTelemetryAttributes.AttributeHttpClientException, ex.Status.ToString());
                 }
 
-                this._enrichHooks.OnError(activity, ex);
+                foreach (var enrichHook in this._enrichHooks)
+                {
+                    enrichHook.OnError(activity, ex);
+                }
             }
         }
     }

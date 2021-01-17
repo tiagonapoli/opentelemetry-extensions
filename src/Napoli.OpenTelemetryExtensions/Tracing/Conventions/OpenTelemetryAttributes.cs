@@ -4,6 +4,12 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.Conventions
     {
         // Extended attributes
         public const string AttributeSamplerType = "sampler.type";
+        public static string GetAttributeHttpRequestHeader(string headerName) => $"http.request_header.{headerName}";
+        public static string GetAttributeHttpResponseHeader(string headerName) => $"http.response_header.{headerName}";
+
+        // The value of WebExceptionStatus on client errors
+        // https://docs.microsoft.com/en-us/dotnet/api/system.net.webexceptionstatus
+        public static string AttributeHttpClientException = "http.client.exception";
 
 
         // The set of constants matches the specification.
@@ -39,9 +45,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.Conventions
         public const string AttributeHttpClientIP = "http.client_ip";
         public const string AttributeHttpUserAgent = "http.user_agent";
         public const string AttributeHttpRequestContentLength = "http.request_content_length";
-        public const string AttributeHttpRequestContentLengthUncompressed = "http.request_content_length_uncompressed";
         public const string AttributeHttpResponseContentLength = "http.response_content_length";
-        public const string AttributeHttpResponseContentLengthUncompressed = "http.response_content_length_uncompressed";
 
         public const string AttributeDbSystem = "db.system";
         public const string AttributeDbConnectionString = "db.connection_string";
