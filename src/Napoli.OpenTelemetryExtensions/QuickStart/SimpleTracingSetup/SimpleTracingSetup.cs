@@ -10,7 +10,7 @@ namespace Napoli.OpenTelemetryExtensions.QuickStart.SimpleTracingSetup
     using Napoli.OpenTelemetryExtensions.QuickStart.PeriodicTasks;
     using Napoli.OpenTelemetryExtensions.Tracing;
     using Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHandler;
-    using Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation.HeadersTracker.ClientHeadersTracker;
+    using Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation.HttpEnrichHooks.ClientHeadersTracker;
     using Napoli.OpenTelemetryExtensions.Tracing.ResourceEnhancers;
     using Napoli.OpenTelemetryExtensions.Tracing.Samplers.DebugMode;
     using Napoli.OpenTelemetryExtensions.Tracing.Samplers.Probabilistic;

@@ -6,18 +6,18 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
     {
         public static Configuration GetDefault()
         {
-            return new Configuration(false, false, new List<string>());
+            return new Configuration(false, false, HeadersTracker.Configuration.GetDefault());
         }
 
         public readonly bool EnableTracing;
         public readonly bool EnableDebugMode;
-        public readonly List<string> TrackedHeaders;
+        public readonly HeadersTracker.Configuration HeadersTrackingConfig;
 
-        public Configuration(bool enableTracing, bool enableDebugMode, List<string> trackedHeaders)
+        public Configuration(bool enableTracing, bool enableDebugMode, HeadersTracker.Configuration headersTrackingConfig)
         {
             this.EnableTracing = enableTracing;
             this.EnableDebugMode = enableDebugMode;
-            this.TrackedHeaders = trackedHeaders;
+            this.HeadersTrackingConfig = headersTrackingConfig;
         }
     }
 }

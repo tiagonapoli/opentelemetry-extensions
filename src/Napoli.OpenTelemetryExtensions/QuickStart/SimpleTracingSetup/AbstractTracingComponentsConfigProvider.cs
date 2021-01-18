@@ -1,12 +1,12 @@
 namespace Napoli.OpenTelemetryExtensions.QuickStart.SimpleTracingSetup
 {
-    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using Napoli.OpenTelemetryExtensions.Interfaces;
-    using ClientHeadersTrackerNamespace = Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation.HeadersTracker.ClientHeadersTracker;
     using ProbabilisticSamplerConfig = Napoli.OpenTelemetryExtensions.Tracing.Samplers.Probabilistic.Configuration;
     using SamplersNamespace = Napoli.OpenTelemetryExtensions.Tracing.Samplers;
+    using ClientHeadersTrackerNamespace = Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation.HttpEnrichHooks.ClientHeadersTracker;
+    using ClientHeadersTrackerConfig = Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation.HttpEnrichHooks.ClientHeadersTracker.Configuration;
     using StartTraceHandlerConfig = Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHandler.Configuration;
     using TracingNamespace = Napoli.OpenTelemetryExtensions.Tracing;
 
@@ -21,6 +21,6 @@ namespace Napoli.OpenTelemetryExtensions.QuickStart.SimpleTracingSetup
         public abstract ProbabilisticSamplerConfig GetProbabilisticSamplerConfig();
         public abstract StartTraceHandlerConfig GetStartTraceHandlerConfig();
         public abstract Task UpdateAsync(CancellationToken cancellationToken);
-        public abstract List<string> GetClientTrackedHeaders();
+        public abstract ClientHeadersTrackerConfig GetClientTrackedHeadersConfig();
     }
 }

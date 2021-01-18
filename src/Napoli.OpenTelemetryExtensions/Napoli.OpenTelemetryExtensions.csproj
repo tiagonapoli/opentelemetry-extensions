@@ -4,7 +4,7 @@
         <TargetFrameworks>net48;netstandard2.0</TargetFrameworks>
         <LangVersion>8.0</LangVersion>
         <PackageId>Napoli.OpenTelemetryExtensions</PackageId>
-        <Version>0.0.7-beta.4</Version>
+        <Version>0.0.7-beta.8</Version>
         <Description>Extensions to OpenTelemetry</Description>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryType>git</RepositoryType>
@@ -21,6 +21,10 @@
         <PackageReference Include="OpenTelemetry.Api" Version="1.0.0-rc1.1" />
         <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.0.0-rc1.1" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.0.0-rc1.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Tracing\HttpInstrumentation\HttpEnrichHooks" />
     </ItemGroup>
 
 </Project>

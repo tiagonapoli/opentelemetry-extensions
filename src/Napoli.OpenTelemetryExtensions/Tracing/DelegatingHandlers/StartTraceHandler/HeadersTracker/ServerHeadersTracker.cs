@@ -1,36 +1,34 @@
-namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHandler
+namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHandler.HeadersTracker
 {
-    using System;
-    using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Linq;
     using System.Net.Http.Headers;
     using Napoli.OpenTelemetryExtensions.Tracing.Conventions;
     using Napoli.OpenTelemetryExtensions.Utils;
 
     public class ServerHeadersTracker
     {
-        private List<string> _trackedHeaders;
+        private Configuration _config;
 
         public ServerHeadersTracker()
         {
-            this._trackedHeaders = new List<string>();
+            this._config = Configuration.GetDefault();
         }
 
         public void EnrichWithRequest(Activity activity, HttpRequestHeaders requestHeaders)
         {
-            foreach (var trackedHeader in this._trackedHeaders)
+            foreach (var trackedHeader in this._config.TrackedRequestHeaders)
             {
                 if (requestHeaders.TryGetHeaderAsString(trackedHeader, out var headerContent))
                 {
-                    activity.SetTag(OpenTelemetryAttributes.GetAttributeHttpRequestHeader(trackedHeader), headerContent);
+                    activity.SetTag(OpenTelemetryAttributes.GetAttributeHttpRequestHeader(trackedHeader),
+                        headerContent);
                 }
             }
         }
 
         public void EnrichWithResponse(Activity activity, HttpResponseHeaders responseHeaders)
         {
-            foreach (var trackedHeader in this._trackedHeaders)
+            foreach (var trackedHeader in this._config.TrackedResponseHeaders)
             {
                 if (responseHeaders.TryGetHeaderAsString(trackedHeader, out var headerContent))
                 {
@@ -40,9 +38,9 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
             }
         }
 
-        public void UpdateConfiguration(List<string> trackedHeaders)
+        public void UpdateConfiguration(Configuration config)
         {
-            this._trackedHeaders = trackedHeaders ?? new List<string>();
+            this._config = config;
         }
     }
 }

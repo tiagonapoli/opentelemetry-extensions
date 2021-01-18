@@ -24,7 +24,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation
 
                 if (request.ContentLength > 0)
                 {
-                    activity.SetTag(OpenTelemetryAttributes.AttributeHttpRequestContentLength,
+                    activity.SetTag(OpenTelemetryAttributes.GetAttributeHttpRequestHeader("content_length"),
                         request.ContentLength);
                 }
 
@@ -42,7 +42,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation
 
                 if (response.ContentLength > 0)
                 {
-                    activity.SetTag(OpenTelemetryAttributes.AttributeHttpResponseContentLength,
+                    activity.SetTag(OpenTelemetryAttributes.GetAttributeHttpResponseHeader("content_length"),
                         response.ContentLength);
                 }
 

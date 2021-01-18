@@ -9,6 +9,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
     using System.Threading.Tasks;
     using Napoli.OpenTelemetryExtensions.Interfaces;
     using Napoli.OpenTelemetryExtensions.Tracing.Conventions;
+    using Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHandler.HeadersTracker;
     using Napoli.OpenTelemetryExtensions.Utils;
     using OpenTelemetry;
     using OpenTelemetry.Context.Propagation;
@@ -48,14 +49,14 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
         public void UpdateConfiguration()
         {
             this._conf = this._configurationProvider.GetStartTraceHandlerConfig();
-            this._serverHeadersTracker.UpdateConfiguration(this._conf.TrackedHeaders);
+            this._serverHeadersTracker.UpdateConfiguration(this._conf.HeadersTrackingConfig);
         }
 
         /// <inheritdoc/>
         public void ResetConfiguration()
         {
             this._conf = Configuration.GetDefault();
-            this._serverHeadersTracker.UpdateConfiguration(this._conf.TrackedHeaders);
+            this._serverHeadersTracker.UpdateConfiguration(this._conf.HeadersTrackingConfig);
         }
 
         /// <inheritdoc/>
