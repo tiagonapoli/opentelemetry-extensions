@@ -1,8 +1,8 @@
 namespace Napoli.OpenTelemetryExtensions.Tracing.Setup
 {
+    using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using Grpc.Core;
     using Napoli.OpenTelemetryExtensions.Tracing.Conventions;
     using Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation;
     using OpenTelemetry;
@@ -32,10 +32,14 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.Setup
                 .SetResourceBuilder(SetupResourceBuilder(conf))
                 .AddSource(conf.ServiceName)
                 .SetSampler(conf.Sampler)
-                .AddOtlpExporter(opt =>
+                // .AddOtlpExporter(opt =>
+                // {
+                //     opt.Endpoint = conf.LightStepIngestEndpoint;
+                //     opt.Headers = new Metadata { { "lightstep-access-token", conf.LightStepProjectToken } };
+                // })
+                .AddZipkinExporter(opt =>
                 {
-                    opt.Endpoint = conf.LightStepIngestEndpoint;
-                    opt.Headers = new Metadata { { "lightstep-access-token", conf.LightStepProjectToken } };
+                    opt.Endpoint = new Uri($"http://{conf.LightStepIngestEndpoint}/api/v2/spans");
                 })
                 .Build();
 
@@ -50,6 +54,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.Setup
                 {
                     {OpenTelemetryResourceAttributes.AttributeDeploymentEnvironment, conf.DeploymentEnvironment},
                     {OpenTelemetryResourceAttributes.AttributeTelemetrySdkLanguage, "dotnet"},
+                    {"lightstep.access_token", conf.LightStepProjectToken}
                 });
 
             if (conf.ResourceEnhancers == null)
