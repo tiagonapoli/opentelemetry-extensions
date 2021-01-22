@@ -2,6 +2,6 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation.HttpEnrichH
 {
     public interface IConfigurationProvider
     {
-         Configuration GetClientTrackedHeadersConfig();
+        Configuration GetClientTrackedHeadersConfig();
     }
 }

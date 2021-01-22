@@ -1,4 +1,4 @@
-﻿namespace Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation.HttpEnrichHooks.ClientHeadersTracker
+namespace Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation.HttpEnrichHooks.ClientHeadersTracker
 {
     using System.Collections.Generic;
 

@@ -1,4 +1,4 @@
-﻿namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHandler.HeadersTracker
+namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHandler.HeadersTracker
 {
     using System.Collections.Generic;
 

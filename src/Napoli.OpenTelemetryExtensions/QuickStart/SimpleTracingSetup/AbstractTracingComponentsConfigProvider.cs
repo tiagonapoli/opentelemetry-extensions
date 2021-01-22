@@ -3,10 +3,10 @@ namespace Napoli.OpenTelemetryExtensions.QuickStart.SimpleTracingSetup
     using System.Threading;
     using System.Threading.Tasks;
     using Napoli.OpenTelemetryExtensions.Interfaces;
+    using ClientHeadersTrackerConfig = Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation.HttpEnrichHooks.ClientHeadersTracker.Configuration;
+    using ClientHeadersTrackerNamespace = Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation.HttpEnrichHooks.ClientHeadersTracker;
     using ProbabilisticSamplerConfig = Napoli.OpenTelemetryExtensions.Tracing.Samplers.Probabilistic.Configuration;
     using SamplersNamespace = Napoli.OpenTelemetryExtensions.Tracing.Samplers;
-    using ClientHeadersTrackerNamespace = Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation.HttpEnrichHooks.ClientHeadersTracker;
-    using ClientHeadersTrackerConfig = Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation.HttpEnrichHooks.ClientHeadersTracker.Configuration;
     using StartTraceHandlerConfig = Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHandler.Configuration;
     using TracingNamespace = Napoli.OpenTelemetryExtensions.Tracing;
 

@@ -18,7 +18,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation.HttpEnrichH
 
         public void UpdateConfiguration()
         {
-             this._config = this._configurationProvider.GetClientTrackedHeadersConfig();
+            this._config = this._configurationProvider.GetClientTrackedHeadersConfig();
         }
 
         public void ResetConfiguration()
