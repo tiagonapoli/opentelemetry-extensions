@@ -92,6 +92,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing
         private static void RunAndTraceOnError(Activity activity, Exception ex)
         {
             activity.SetStatus(Status.Error);
+            activity.SetTag("error", "true");
             activity.SetTag(OpenTelemetryAttributes.AttributeExceptionType, ex.GetType());
         }
     }

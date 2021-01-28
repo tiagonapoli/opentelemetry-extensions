@@ -48,7 +48,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation
 
                 if (TracingUtils.IsErrorStatusCode((int)response.StatusCode))
                 {
-                    activity.SetTag("error", true);
+                    activity.SetTag("error", "true");
                 }
 
                 foreach (var enrichHook in this._enrichHooks)
@@ -63,7 +63,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.HttpInstrumentation
                     return;
                 }
 
-                activity.SetTag("error", true);
+                activity.SetTag("error", "true");
                 var statusCode = (ex.Response as HttpWebResponse)?.StatusCode;
                 if (statusCode == null)
                 {

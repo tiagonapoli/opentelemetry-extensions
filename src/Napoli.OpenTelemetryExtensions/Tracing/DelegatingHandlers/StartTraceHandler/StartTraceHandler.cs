@@ -178,7 +178,7 @@ namespace Napoli.OpenTelemetryExtensions.Tracing.DelegatingHandlers.StartTraceHa
             activity.SetTag(OpenTelemetryAttributes.AttributeHttpStatusCode, statusCode);
             if (TracingUtils.IsErrorStatusCode(statusCode))
             {
-                activity.SetTag("error", true);
+                activity.SetTag("error", "true");
             }
 
             if (activity.GetStatus().StatusCode == StatusCode.Unset)
