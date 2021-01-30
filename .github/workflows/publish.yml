@@ -38,7 +38,4 @@ jobs:
           env && dotnet pack --configuration Release -p:Version=${{ steps.tag.outputs.result }} src/Napoli.OpenTelemetryExtensions
 
       - name: Push to NuGet Feed
-        run: dotnet nuget push src/Napoli.OpenTelemetryExtensions/bin/Release/*.nupkg --source "$NUGET_FEED" --skip-duplicate --api-key oy2kyzt6bgn5r34ureiqtigb2sodl4aulopq6ph2dfboq4
-        env:
-          NUGET_FEED: https://api.nuget.org/v3/index.json
-          NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}
+        run: dotnet nuget push src/Napoli.OpenTelemetryExtensions/bin/Release/*.nupkg --source https://api.nuget.org/v3/index.json --skip-duplicate --api-key oy2kyzt6bgn5r34ureiqtigb2sodl4aulopq6ph2dfboq4
