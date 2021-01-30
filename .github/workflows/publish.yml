@@ -1,4 +1,4 @@
-name: public
+name: publish
 
 on:
   push:
@@ -19,8 +19,8 @@ jobs:
         id: get_version
         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
 
-      - name: Echo version
-        run: echo ${{ steps.get_version.outputs.VERSION }}
+      # - name: Echo version
+      #   run: echo ${{ steps.get_version.outputs.VERSION }}
 
       # - name: Pack
       #   run: dotnet pack -v normal --include-symbols --configuration Release -p:PackageVersion=1.2.3 src/Napoli.OpenTelemetryExtensions
