@@ -39,7 +39,7 @@ jobs:
 
       - name: Push to NuGet Feed
         run: |
-          env && dotnet nuget push src/Napoli.OpenTelemetryExtensions/bin/Release/*.nupkg --source "$NUGET_FEED" --skip-duplicate --api-key "$NUGET_API_KEY"
+          echo "$NUGET_FEED $NUGET_API_KEY " && dotnet nuget push --source "$NUGET_FEED" --skip-duplicate --api-key "$NUGET_API_KEY" src/Napoli.OpenTelemetryExtensions/bin/Release/*.nupkg
         env:
           NUGET_FEED: https://api.nuget.org/v3/index.json
           NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}
